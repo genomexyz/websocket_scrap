@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<script type="text/javascript">
+    var ws
+    var dps
+    var chart
+
+    window.onload = function () {
+        dps = [{x: 1, y: 10}, {x: 2, y: 13}, {x: 3, y: 18}, {x: 4, y: 20}, {x: 5, y: 17},{x: 6, y: 10}, {x: 7, y: 13}, {x: 8, y: 18}, {x: 9, y: 20}, {x: 10, y: 17}];   //dataPoints. 
+        xVal = dps.length + 1;
+        chart = new CanvasJS.Chart("chartContainer",{
+            title :{
+                text: "Real Time Data"
+            },
+            axisX: {						
+                title: "Axis X Title"
+            },
+            axisY: {						
+                title: "Units"
+            },
+            data: [{
+                type: "line",
+                dataPoints : dps
+            }]
+        })
+
+        chart.render();
+
+        ws = new WebSocket("{{.}}");
+        ws.onopen = function(evt) {
+            console.log("OPEN");
+        }
+        ws.onclose = function(evt) {
+            console.log("CLOSE");
+            ws = null;
+        }
+        ws.onmessage = function(evt) {
+            console.log("RESPONSE: " + evt.data);
+            //yVal = yVal +  Math.round(5 + Math.random() *(-5-5));
+            yVal = parseInt(evt.data)
+            dps.push({x: xVal,y: yVal})
+            
+            xVal++;
+            if (dps.length >  10 )
+            {
+                dps.shift();				
+            }
+
+            chart.render();
+        }
+        ws.onerror = function(evt) {
+            console.log("ERROR: " + evt.data);
+        }
+    }
+
+</script>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</head>
+<body>
+	<div id="chartContainer" style="height: 300px; width: 100%;">
+	</div>
+</body>
+</html>
